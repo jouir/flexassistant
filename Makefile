@@ -12,6 +12,7 @@ build:
 
 release:
 	go build -ldflags "${LDFLAGS}" -o bin/flexassistant-${APPVERSION}-${PLATFORM}-${ARCH} *.go
+	sha256sum bin/flexassistant-${APPVERSION}-${PLATFORM}-${ARCH}
 
 clean:
 	rm -rf bin
