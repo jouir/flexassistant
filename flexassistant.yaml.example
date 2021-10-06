@@ -1,0 +1,20 @@
+---
+database-file: flexassistant.db
+max-blocks: 10
+max-payments: 5
+miners:
+  - address: 0x0000000000000000000000000000000000000000
+    enable-balance: true
+    enable-payments: true
+  - address: xch00000000000000000000000000000000000000000000000000000000000
+    enable-balance: true
+    enable-payments: true
+pools:
+  - coin: eth
+    enable-blocks: true
+  - coin: xch
+    enable-blocks: true
+telegram:
+  chat-id: 000000000
+  channel-name: MyTelegramChannel
+  token: 0000000000000000000000000000000000000000000000
