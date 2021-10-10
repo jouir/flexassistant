@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -71,4 +72,28 @@ func NewPayment(hash string, value float64, timestamp float64) *Payment {
 // String represents a Payment to a printable format
 func (p *Payment) String() string {
 	return fmt.Sprintf("Payment<%s>", p.Hash)
+}
+
+// Worker to store workers attributes
+type Worker struct {
+	gorm.Model
+	MinerAddress string    `gorm:"not null"`
+	Name         string    `gorm:"not null"`
+	IsOnline     bool      `gorm:"not null"`
+	LastSeen     time.Time `gorm:"not null"`
+}
+
+// NewWorker creates a Worker
+func NewWorker(minerAddress string, name string, isOnline bool, lastSeen time.Time) *Worker {
+	return &Worker{
+		MinerAddress: minerAddress,
+		Name:         name,
+		IsOnline:     isOnline,
+		LastSeen:     lastSeen,
+	}
+}
+
+// String represents Worker to a printable format
+func (w *Worker) String() string {
+	return fmt.Sprintf("Worker<%s>", w.Name)
 }

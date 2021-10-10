@@ -24,9 +24,10 @@ type PoolConfig struct {
 
 // MinerConfig to store Miner configuration
 type MinerConfig struct {
-	Address        string `yaml:"address"`
-	EnableBalance  bool   `yaml:"enable-balance"`
-	EnablePayments bool   `yaml:"enable-payments"`
+	Address              string `yaml:"address"`
+	EnableBalance        bool   `yaml:"enable-balance"`
+	EnablePayments       bool   `yaml:"enable-payments"`
+	EnableOfflineWorkers bool   `yaml:"enable-offline-workers"`
 }
 
 // TelegramConfig to store Telegram configuration

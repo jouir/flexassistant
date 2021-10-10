@@ -76,6 +76,10 @@ func main() {
 		log.Fatalf("Could not create objects: %v", err)
 	}
 
+	if err := EnsureDatabaseRetention(db); err != nil {
+		log.Fatalf("Could not cleanup objects from database: %v", err)
+	}
+
 	// API client
 	client := NewFlexpoolClient()
 
@@ -177,6 +181,49 @@ func main() {
 							continue
 						}
 						log.Infof("Payment notification sent for %s", payment)
+					}
+				}
+			}
+		}
+
+		// Offline workers management
+		if configuredMiner.EnableOfflineWorkers {
+			log.Debugf("Fetching workers for %s", miner)
+
+			workers, err := client.MinerWorkers(miner.Coin, miner.Address)
+			if err != nil {
+				log.Warnf("Could not fetch workers: %v", err)
+				continue
+			}
+			for _, worker := range workers {
+				log.Debugf("Fetched %s", worker)
+
+				var dbWorker Worker
+				trx := db.Where(Worker{MinerAddress: miner.Address, Name: worker.Name}).Attrs(Worker{MinerAddress: miner.Address, Name: worker.Name}).FirstOrCreate(&dbWorker)
+				if trx.Error != nil {
+					log.Warnf("Cannot fetch worker %s from database: %v", worker, trx.Error)
+					continue
+				}
+
+				if dbWorker.IsOnline != worker.IsOnline {
+					// Skip first notification
+					notify := true
+					if dbWorker.LastSeen.IsZero() {
+						notify = false
+					}
+					dbWorker.IsOnline = worker.IsOnline
+					dbWorker.LastSeen = worker.LastSeen
+					if trx = db.Save(&dbWorker); trx.Error != nil {
+						log.Warnf("Cannot update worker: %v", trx.Error)
+						continue
+					}
+					if notify {
+						err = notifier.NotifyOfflineWorker(*worker)
+						if err != nil {
+							log.Warnf("Cannot send notification: %v", err)
+							continue
+						}
+						log.Infof("Offline worker notification sent for %s", worker)
 					}
 				}
 			}

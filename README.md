@@ -73,6 +73,7 @@ Reference:
     * `address`: address of the miner or the farmer registered on the API
     * `enable-balance` (optional): enable balance notifications (disabled by default)
     * `enable-payments` (optional): enable payments notifications (disabled by default)
+    * `enable-offline-workers` (optional): enable offline/online notifications for associated workers (disabled by default)
 * `telegram`: Telegram configuration
     * `token`: token of the Telegram bot
     * `chat-id` (optional if `channel-name` is present): chat identifier to send Telegram notifications

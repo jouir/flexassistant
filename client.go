@@ -55,10 +55,40 @@ func (f *FlexpoolClient) request(url string) (result map[string]interface{}, err
 
 	json.Unmarshal(jsonBody, &result)
 
-	if result["error"] == nil {
-		return result["result"].(map[string]interface{}), nil
+	if result["error"] != nil {
+		return nil, fmt.Errorf("Flexpool API error: %s", result["error"].(string))
 	}
-	return nil, fmt.Errorf("Flexpool API error: %s", result["error"].(string))
+	return result["result"].(map[string]interface{}), nil
+}
+
+// requestBytes to create an HTTPS request, call the Flexpool API, detect errors and return the result in bytes
+func (f *FlexpoolClient) requestBytes(url string) ([]byte, error) {
+	log.Debugf("Requesting %s", url)
+
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("User-Agent", UserAgent)
+
+	resp, err := f.client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	jsonBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var result map[string]interface{}
+	json.Unmarshal(jsonBody, &result)
+
+	if result["error"] != nil {
+		return nil, fmt.Errorf("Flexpool API error: %s", result["error"].(string))
+	}
+	return jsonBody, nil
 }
 
 // MinerBalance returns the current unpaid balance
@@ -100,6 +130,38 @@ func (f *FlexpoolClient) MinerPayments(coin string, address string, limit int) (
 			return nil, fmt.Errorf("Max iterations of %d reached", MaxIterations)
 		}
 	}
+}
+
+// WorkersResponse represents the JSON structure of the Flexpool API response for workers
+type WorkersResponse struct {
+	Error  string `json:"error"`
+	Result []struct {
+		Name      string `json:"name"`
+		IsOnline  bool   `json:"isOnline"`
+		LastSteen int64  `json:"lastSeen"`
+	} `json:"result"`
+}
+
+// MinerWorkers returns a list of workers given a miner address
+func (f *FlexpoolClient) MinerWorkers(coin string, address string) (workers []*Worker, err error) {
+	body, err := f.requestBytes(fmt.Sprintf("%s/miner/workers?coin=%s&address=%s", FlexpoolAPIURL, coin, address))
+	if err != nil {
+		return nil, err
+	}
+
+	var response WorkersResponse
+	json.Unmarshal(body, &response)
+
+	for _, result := range response.Result {
+		worker := NewWorker(
+			address,
+			result.Name,
+			result.IsOnline,
+			time.Unix(result.LastSteen, 0),
+		)
+		workers = append(workers, worker)
+	}
+	return workers, nil
 }
 
 // PoolBlocks returns an ordered list of blocks

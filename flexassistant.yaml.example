@@ -6,9 +6,11 @@ miners:
   - address: 0x0000000000000000000000000000000000000000
     enable-balance: true
     enable-payments: true
+    enable-offline-workers: true
   - address: xch00000000000000000000000000000000000000000000000000000000000
     enable-balance: true
     enable-payments: true
+    enable-offline-workers: true
 pools:
   - coin: eth
     enable-blocks: true

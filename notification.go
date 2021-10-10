@@ -15,6 +15,7 @@ type Notifier interface {
 	NotifyBalance(miner Miner, difference float64) error
 	NotifyPayment(miner Miner, payment Payment) error
 	NotifyBlock(pool Pool, block Block) error
+	NotifyOfflineWorker(worker Worker) error
 }
 
 // TelegramNotifier to send notifications using Telegram
@@ -119,5 +120,17 @@ func (t *TelegramNotifier) NotifyBlock(pool Pool, block Block) error {
 	}
 
 	message := fmt.Sprintf("🎉 *%s* [#%.0f](%s) _%s_", verb, block.Number, url, ac.FormatMoney(convertedValue))
+	return t.sendMessage(message)
+}
+
+// NotifyOfflineWorker sends a message when a worker is online or offline
+func (t *TelegramNotifier) NotifyOfflineWorker(worker Worker) error {
+	stateIcon := "🟢"
+	stateMessage := "online"
+	if !worker.IsOnline {
+		stateIcon = "🔴"
+		stateMessage = "offline"
+	}
+	message := fmt.Sprintf("%s *Worker* _%s_ is %s", stateIcon, worker.Name, stateMessage)
 	return t.sendMessage(message)
 }
