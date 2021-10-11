@@ -12,7 +12,7 @@ const MojoToXCHDivider = 1000000000000
 
 // ConvertCurrency divides the smallest unit of the currency to the currency itself
 // Example: for "eth", convert from Weis to ETH
-func ConvertCurrency(coin string, value float64) (float64, error) {
+func ConvertCurrency(coin string, value int64) (float64, error) {
 	switch coin {
 	case "eth":
 		return ConvertWeis(value), nil
@@ -24,13 +24,13 @@ func ConvertCurrency(coin string, value float64) (float64, error) {
 }
 
 // ConvertWeis converts the value from Weis to ETH
-func ConvertWeis(value float64) float64 {
-	return value / WeisToETHDivider
+func ConvertWeis(value int64) float64 {
+	return float64(value) / WeisToETHDivider
 }
 
 // ConvertMojo converts the value from Mojo to XCH
-func ConvertMojo(value float64) float64 {
-	return value / MojoToXCHDivider
+func ConvertMojo(value int64) float64 {
+	return float64(value) / MojoToXCHDivider
 }
 
 // ConvertAction returns "Miner" for Ethereum and "Farmer" for Chia

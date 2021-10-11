@@ -19,8 +19,8 @@ type Miner struct {
 	gorm.Model
 	Coin                 string
 	Address              string `gorm:"unique;not null"`
-	Balance              float64
-	LastPaymentTimestamp float64
+	Balance              int64
+	LastPaymentTimestamp int64
 }
 
 // NewMiner creates a Miner
@@ -56,12 +56,12 @@ func (m *Miner) String() string {
 // Payment to store payment attributes
 type Payment struct {
 	Hash      string
-	Value     float64
-	Timestamp float64
+	Value     int64
+	Timestamp int64
 }
 
 // NewPayment creates a Payment
-func NewPayment(hash string, value float64, timestamp float64) *Payment {
+func NewPayment(hash string, value int64, timestamp int64) *Payment {
 	return &Payment{
 		Hash:      hash,
 		Value:     value,

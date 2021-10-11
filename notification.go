@@ -119,7 +119,7 @@ func (t *TelegramNotifier) NotifyBlock(pool Pool, block Block) error {
 		return err
 	}
 
-	message := fmt.Sprintf("🎉 *%s* [#%.0f](%s) _%s_", verb, block.Number, url, ac.FormatMoney(convertedValue))
+	message := fmt.Sprintf("🎉 *%s* [#%d](%s) _%s_", verb, block.Number, url, ac.FormatMoney(convertedValue))
 	return t.sendMessage(message)
 }
 

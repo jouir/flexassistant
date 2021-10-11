@@ -32,37 +32,8 @@ func NewFlexpoolClient() *FlexpoolClient {
 	}
 }
 
-// request to create an HTTPS request, call the Flexpool API, detect errors and return the result
-func (f *FlexpoolClient) request(url string) (result map[string]interface{}, err error) {
-	log.Debugf("Requesting %s", url)
-
-	request, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Set("User-Agent", UserAgent)
-
-	resp, err := f.client.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	jsonBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	json.Unmarshal(jsonBody, &result)
-
-	if result["error"] != nil {
-		return nil, fmt.Errorf("Flexpool API error: %s", result["error"].(string))
-	}
-	return result["result"].(map[string]interface{}), nil
-}
-
-// requestBytes to create an HTTPS request, call the Flexpool API, detect errors and return the result in bytes
-func (f *FlexpoolClient) requestBytes(url string) ([]byte, error) {
+// request to create an HTTPS request, call the Flexpool API, detect errors and return the result in bytes
+func (f *FlexpoolClient) request(url string) ([]byte, error) {
 	log.Debugf("Requesting %s", url)
 
 	request, err := http.NewRequest("GET", url, nil)
@@ -91,30 +62,55 @@ func (f *FlexpoolClient) requestBytes(url string) ([]byte, error) {
 	return jsonBody, nil
 }
 
+// BalanceResponse represents the JSON structure of the Flexpool API response for balance
+type BalanceResponse struct {
+	Error  string `json:"error"`
+	Result struct {
+		Balance int64 `json:"balance"`
+	} `json:"result"`
+}
+
 // MinerBalance returns the current unpaid balance
-func (f *FlexpoolClient) MinerBalance(coin string, address string) (float64, error) {
-	response, err := f.request(fmt.Sprintf("%s/miner/balance?coin=%s&address=%s", FlexpoolAPIURL, coin, address))
+func (f *FlexpoolClient) MinerBalance(coin string, address string) (int64, error) {
+	body, err := f.request(fmt.Sprintf("%s/miner/balance?coin=%s&address=%s", FlexpoolAPIURL, coin, address))
 	if err != nil {
 		return 0, err
 	}
-	return response["balance"].(float64), nil
+
+	var response BalanceResponse
+	json.Unmarshal(body, &response)
+	return response.Result.Balance, nil
+}
+
+// PaymentsResponse represents the JSON structure of the Flexpool API response for payments
+type PaymentsResponse struct {
+	Error  string `json:"error"`
+	Result struct {
+		Data []struct {
+			Hash      string `json:"hash"`
+			Value     int64  `json:"value"`
+			Timestamp int64  `json:"timestamp"`
+		} `json:"data"`
+	} `json:"result"`
 }
 
 // MinerPayments returns an ordered list of payments
 func (f *FlexpoolClient) MinerPayments(coin string, address string, limit int) (payments []*Payment, err error) {
 	page := 0
 	for {
-		response, err := f.request(fmt.Sprintf("%s/miner/payments/?coin=%s&address=%s&page=%d", FlexpoolAPIURL, coin, address, page))
+		body, err := f.request(fmt.Sprintf("%s/miner/payments/?coin=%s&address=%s&page=%d", FlexpoolAPIURL, coin, address, page))
 		if err != nil {
 			return nil, err
 		}
 
-		for _, result := range response["data"].([]interface{}) {
-			raw := result.(map[string]interface{})
+		var response PaymentsResponse
+		json.Unmarshal(body, &response)
+
+		for _, result := range response.Result.Data {
 			payment := NewPayment(
-				raw["hash"].(string),
-				raw["value"].(float64),
-				raw["timestamp"].(float64),
+				result.Hash,
+				result.Value,
+				result.Timestamp,
 			)
 			payments = append(payments, payment)
 			if len(payments) >= limit {
@@ -144,7 +140,7 @@ type WorkersResponse struct {
 
 // MinerWorkers returns a list of workers given a miner address
 func (f *FlexpoolClient) MinerWorkers(coin string, address string) (workers []*Worker, err error) {
-	body, err := f.requestBytes(fmt.Sprintf("%s/miner/workers?coin=%s&address=%s", FlexpoolAPIURL, coin, address))
+	body, err := f.request(fmt.Sprintf("%s/miner/workers?coin=%s&address=%s", FlexpoolAPIURL, coin, address))
 	if err != nil {
 		return nil, err
 	}
@@ -164,21 +160,35 @@ func (f *FlexpoolClient) MinerWorkers(coin string, address string) (workers []*W
 	return workers, nil
 }
 
+// BlocksResponse represents the JSON structure of the Flexpool API response for blocks
+type BlocksResponse struct {
+	Error  string `json:"error"`
+	Result struct {
+		Data []struct {
+			Hash   string `json:"hash"`
+			Number int64  `json:"number"`
+			Reward int64  `json:"reward"`
+		} `json:"data"`
+	} `json:"result"`
+}
+
 // PoolBlocks returns an ordered list of blocks
 func (f *FlexpoolClient) PoolBlocks(coin string, limit int) (blocks []*Block, err error) {
 	page := 0
 	for {
-		response, err := f.request(fmt.Sprintf("%s/pool/blocks/?coin=%s&page=%d", FlexpoolAPIURL, coin, page))
+		body, err := f.request(fmt.Sprintf("%s/pool/blocks/?coin=%s&page=%d", FlexpoolAPIURL, coin, page))
 		if err != nil {
 			return nil, err
 		}
 
-		for _, result := range response["data"].([]interface{}) {
-			raw := result.(map[string]interface{})
+		var response BlocksResponse
+		json.Unmarshal(body, &response)
+
+		for _, result := range response.Result.Data {
 			block := NewBlock(
-				raw["hash"].(string),
-				raw["number"].(float64),
-				raw["reward"].(float64),
+				result.Hash,
+				result.Number,
+				result.Reward,
 			)
 			blocks = append(blocks, block)
 			if len(blocks) >= limit {

@@ -132,7 +132,7 @@ func main() {
 				log.Warnf("Could not fetch unpaid balance: %v", err)
 				continue
 			}
-			log.Debugf("Unpaid balance %.0f", balance)
+			log.Debugf("Unpaid balance %d", balance)
 			miner.Balance = balance
 			if miner.Balance != dbMiner.Balance {
 				dbMiner.Balance = balance
