@@ -1,0 +1,5 @@
+{{ if .Worker.IsOnline -}}
+🟢 *Worker* _{{ .Worker.Name }}_ is online
+{{- else -}}
+🔴 *Worker* _{{ .Worker.Name }}_ is offline
+{{- end -}}

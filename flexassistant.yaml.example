@@ -20,3 +20,8 @@ telegram:
   chat-id: 000000000
   channel-name: MyTelegramChannel
   token: 0000000000000000000000000000000000000000000000
+notification-templates:
+  balance: balance.tmpl
+  block: block.tmpl
+  offline-worker; offline-worker.tmpl
+  payment: payment.tmpl

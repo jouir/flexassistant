@@ -78,6 +78,33 @@ Reference:
     * `token`: token of the Telegram bot
     * `chat-id` (optional if `channel-name` is present): chat identifier to send Telegram notifications
     * `channel-name` (optional if `chat-id` is present): channel name to send Telegram notifications
+* `notification-templates` (optional): path to [template](https://pkg.go.dev/text/template) files for each notification type
+    * `balance` (optional): path to template file to format balance notifications
+    * `payment` (optional): path to template file to format payment notifications
+    * `block` (optional): path to template file to format block notifications
+    * `offline-worker` (optional): path to template file to format offline worker notifications
+
+## Templating
+
+Notifications can be customized with [templating](https://pkg.go.dev/text/template).
+
+The following **functions** are available to templates:
+* `upper(str string)`: convert string to upper case
+* `lower(str string)`: convert string to lower case
+* `convertCurrency(coin string, value int64)`: convert the smallest unit of a coin to a human readable unit
+* `convertAction(coin string)`: return "Farmed" word for Chia coin or "Mined" for other coins
+* `formatBlockURL(coin string, hash string)`: return the URL on the explorer website of the coin of the block identified by its hash
+* `formatTransactionURL(coin string, hash string)`: return the URL on the explorer website of the coin of the transaction identified by its hash
+
+The following **data** is available to templates:
+* balance: `.Miner`
+* payment: `.Miner`, `.Payment`
+* block: `.Pool`, `.Block`
+* offline-worker: `.Worker`
+
+Default templates are available in the [templates](templates) directory.
+
+Custom template files can be used with the `notification-templates` settings (see _Configuration_ section).
 
 ## Usage
 

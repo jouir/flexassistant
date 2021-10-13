@@ -8,12 +8,13 @@ import (
 
 // Config to receive settings from the configuration file
 type Config struct {
-	DatabaseFile   string         `yaml:"database-file"`
-	MaxBlocks      int            `yaml:"max-blocks"`
-	MaxPayments    int            `yaml:"max-payments"`
-	Pools          []PoolConfig   `yaml:"pools"`
-	Miners         []MinerConfig  `yaml:"miners"`
-	TelegramConfig TelegramConfig `yaml:"telegram"`
+	DatabaseFile          string                      `yaml:"database-file"`
+	MaxBlocks             int                         `yaml:"max-blocks"`
+	MaxPayments           int                         `yaml:"max-payments"`
+	Pools                 []PoolConfig                `yaml:"pools"`
+	Miners                []MinerConfig               `yaml:"miners"`
+	TelegramConfig        TelegramConfig              `yaml:"telegram"`
+	NotificationTemplates NotificationTemplatesConfig `yaml:"notification-templates"`
 }
 
 // PoolConfig to store Pool configuration
@@ -35,6 +36,14 @@ type TelegramConfig struct {
 	Token       string `yaml:"token"`
 	ChatID      int64  `yaml:"chat-id"`
 	ChannelName string `yaml:"channel-name"`
+}
+
+// NotificationTemplatesConfig to store notifications templates configuration
+type NotificationTemplatesConfig struct {
+	Balance       string `yaml:"balance"`
+	Payment       string `yaml:"payment"`
+	Block         string `yaml:"block"`
+	OfflineWorker string `yaml:"offline-worker"`
 }
 
 // NewConfig creates a Config with default values

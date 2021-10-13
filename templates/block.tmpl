@@ -1,0 +1,6 @@
+🎉 *{{ convertAction .Pool.Coin }}* [#{{ .Block.Number }}]({{ formatBlockURL .Pool.Coin .Block.Hash }}) _
+{{- if (eq .Pool.Coin "xch") -}}
+        {{ printf "%.2f" (convertCurrency .Pool.Coin .Block.Reward) }}
+    {{- else -}}
+        {{ printf "%.6f" (convertCurrency .Pool.Coin .Block.Reward) }}
+    {{- end }} {{ upper .Pool.Coin }}_

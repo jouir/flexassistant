@@ -84,7 +84,7 @@ func main() {
 	client := NewFlexpoolClient()
 
 	// Notifications
-	notifier, err := NewTelegramNotifier(&config.TelegramConfig)
+	notifier, err := NewTelegramNotifier(&config.TelegramConfig, &config.NotificationTemplates)
 	if err != nil {
 		log.Fatalf("Could not create notifier: %v", err)
 	}
