@@ -18,7 +18,7 @@ get **notified** when a **block** is mined, or farmed. We also like to keep trac
 
 ### Binaries
 
-Go to [Releases](/releases) to download the binary in the version you like (latest is recommended) into a `bin` directory.
+Go to [Releases](https://github.com/jouir/flexassistant/releases) to download the binary in the version you like (latest is recommended) into a `bin` directory.
 
 Write checksum information to a local file:
 
