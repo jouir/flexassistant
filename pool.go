@@ -10,7 +10,7 @@ import (
 type Pool struct {
 	gorm.Model
 	Coin            string `gorm:"unique;not null"`
-	LastBlockNumber int64
+	LastBlockNumber uint64
 }
 
 // NewPool creates a Pool
@@ -25,13 +25,13 @@ func (p *Pool) String() string {
 
 // Block to store block attributes
 type Block struct {
-	Hash   string `gorm:"unique;not null"`
-	Number int64  `gorm:"not null"`
-	Reward int64  `gorm:"not null"`
+	Hash   string  `gorm:"unique;not null"`
+	Number uint64  `gorm:"not null"`
+	Reward float64 `gorm:"not null"`
 }
 
 // NewBlock creates a Block
-func NewBlock(hash string, number int64, reward int64) *Block {
+func NewBlock(hash string, number uint64, reward float64) *Block {
 	return &Block{
 		Hash:   hash,
 		Number: number,

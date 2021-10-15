@@ -66,12 +66,12 @@ func (f *FlexpoolClient) request(url string) ([]byte, error) {
 type BalanceResponse struct {
 	Error  string `json:"error"`
 	Result struct {
-		Balance int64 `json:"balance"`
+		Balance float64 `json:"balance"`
 	} `json:"result"`
 }
 
 // MinerBalance returns the current unpaid balance
-func (f *FlexpoolClient) MinerBalance(coin string, address string) (int64, error) {
+func (f *FlexpoolClient) MinerBalance(coin string, address string) (float64, error) {
 	body, err := f.request(fmt.Sprintf("%s/miner/balance?coin=%s&address=%s", FlexpoolAPIURL, coin, address))
 	if err != nil {
 		return 0, err
@@ -87,9 +87,9 @@ type PaymentsResponse struct {
 	Error  string `json:"error"`
 	Result struct {
 		Data []struct {
-			Hash      string `json:"hash"`
-			Value     int64  `json:"value"`
-			Timestamp int64  `json:"timestamp"`
+			Hash      string  `json:"hash"`
+			Value     float64 `json:"value"`
+			Timestamp int64   `json:"timestamp"`
 		} `json:"data"`
 	} `json:"result"`
 }
@@ -165,9 +165,9 @@ type BlocksResponse struct {
 	Error  string `json:"error"`
 	Result struct {
 		Data []struct {
-			Hash   string `json:"hash"`
-			Number int64  `json:"number"`
-			Reward int64  `json:"reward"`
+			Hash   string  `json:"hash"`
+			Number uint64  `json:"number"`
+			Reward float64 `json:"reward"`
 		} `json:"data"`
 	} `json:"result"`
 }
