@@ -93,7 +93,6 @@ func (t *TelegramNotifier) formatMessage(templateFileName string, attachment int
 		"upper":                strings.ToUpper,
 		"lower":                strings.ToLower,
 		"convertCurrency":      ConvertCurrency,
-		"convertAction":        ConvertAction,
 		"formatBlockURL":       FormatBlockURL,
 		"formatTransactionURL": FormatTransactionURL,
 	}

@@ -98,7 +98,6 @@ The following **functions** are available to templates:
 * `upper(str string)`: convert string to upper case
 * `lower(str string)`: convert string to lower case
 * `convertCurrency(coin string, value int64)`: convert the smallest unit of a coin to a human readable unit
-* `convertAction(coin string)`: return "Farmed" word for Chia coin or "Mined" for other coins
 * `formatBlockURL(coin string, hash string)`: return the URL on the explorer website of the coin of the block
    identified by its hash
 * `formatTransactionURL(coin string, hash string)`: return the URL on the explorer website of the coin of the

@@ -1,1 +1,1 @@
-🎉 *{{ convertAction .Pool.Coin }}* [#{{ .Block.Number }}]({{ formatBlockURL .Pool.Coin .Block.Hash }}) _{{ printf "%.6f" (convertCurrency .Pool.Coin .Block.Reward) }} {{ upper .Pool.Coin }}_
+🎉 *{{ if (eq .Pool.Coin "xch") }}Farmed{{ else }}Mined{{ end }}* [#{{ .Block.Number }}]({{ formatBlockURL .Pool.Coin .Block.Hash }}) _{{ printf "%.6f" (convertCurrency .Pool.Coin .Block.Reward) }} {{ upper .Pool.Coin }}_

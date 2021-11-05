@@ -33,18 +33,6 @@ func ConvertMojo(value float64) float64 {
 	return value / MojoToXCHDivider
 }
 
-// ConvertAction returns "Miner" for Ethereum and "Farmer" for Chia
-// Because Chia is farmed and not mined
-func ConvertAction(coin string) (string, error) {
-	switch coin {
-	case "eth":
-		return "Mined", nil
-	case "xch":
-		return "Farmed", nil
-	}
-	return "", fmt.Errorf("Coin %s not supported", coin)
-}
-
 // FormatBlockURL returns the URL on the respective blockchain explorer given the coin and the block hash
 func FormatBlockURL(coin string, hash string) (string, error) {
 	switch coin {
