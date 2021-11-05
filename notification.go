@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"embed"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -79,14 +80,6 @@ func (t *TelegramNotifier) sendMessage(message string) error {
 
 // formatMessage to create a message with a template file name (either embeded or on disk)
 func (t *TelegramNotifier) formatMessage(templateFileName string, attachment interface{}) (message string, err error) {
-	// Deduce if template file is embeded or is a file on disk
-	embeded := true
-	if _, err = os.Stat(templateFileName); os.IsExist(err) {
-		embeded = false
-	}
-	// Reinitialize the error because it was only used for the test
-	err = nil
-
 	// Create template
 	templateName := path.Base(templateFileName)
 	templateFunctions := template.FuncMap{
@@ -99,12 +92,12 @@ func (t *TelegramNotifier) formatMessage(templateFileName string, attachment int
 	tmpl := template.New(templateName).Funcs(templateFunctions)
 
 	// Parse template
-	if embeded {
-		log.Debugf("Parsing embeded template file %s", templateFileName)
-		tmpl, err = tmpl.ParseFS(templateFiles, templateFileName)
-	} else {
+	if fileExists(templateFileName) {
 		log.Debugf("Parsing template file %s", templateFileName)
 		tmpl, err = tmpl.ParseFiles(templateFileName)
+	} else {
+		log.Debugf("Parsing embeded template file %s", templateFileName)
+		tmpl, err = tmpl.ParseFS(templateFiles, templateFileName)
 	}
 	if err != nil {
 		return "", fmt.Errorf("parse failed: %v", err)
@@ -120,6 +113,12 @@ func (t *TelegramNotifier) formatMessage(templateFileName string, attachment int
 	// Extract and return the formatted message
 	message = buffer.String()
 	return message, nil
+}
+
+// isFileTemplate returns true when the filename is a real file on the filesystem
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return !errors.Is(err, os.ErrNotExist)
 }
 
 // NotifyBalance to format and send a notification when the unpaid balance has changed
