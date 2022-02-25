@@ -263,7 +263,11 @@ func main() {
 							log.Warnf("Cannot update pool: %v", trx.Error)
 							continue
 						}
-						if notify {
+						convertedReward, err := ConvertCurrency(pool.Coin, block.Reward)
+						if err != nil {
+							log.Warnf("Reward for block %d cannot be converted: %v", block.Number, err)
+						}
+						if notify && convertedReward >= configuredPool.MinBlockReward {
 							err = notifier.NotifyBlock(*pool, *block)
 							if err != nil {
 								log.Warnf("Cannot send notification: %v", err)

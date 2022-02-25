@@ -19,8 +19,9 @@ type Config struct {
 
 // PoolConfig to store Pool configuration
 type PoolConfig struct {
-	Coin         string `yaml:"coin"`
-	EnableBlocks bool   `yaml:"enable-blocks"`
+	Coin           string  `yaml:"coin"`
+	EnableBlocks   bool    `yaml:"enable-blocks"`
+	MinBlockReward float64 `yaml:"min-block-reward"`
 }
 
 // MinerConfig to store Miner configuration

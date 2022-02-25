@@ -73,6 +73,7 @@ Reference:
 * `pools` (optional): list of pools
     * `coin`: coin of the pool (ex: `eth`, `xch`)
     * `enable-blocks` (optional): enable block notifications for this pool (disabled by default)
+    * `min-block-reward` (optional): send notifications when block reward has reached this minimum threshold in crypto currency unit (ETH, XCH, etc)
 * `miners` (optional): list of miners and/or farmers
     * `address`: address of the miner or the farmer registered on the API
     * `enable-balance` (optional): enable balance notifications (disabled by default)

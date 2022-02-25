@@ -14,8 +14,10 @@ miners:
 pools:
   - coin: eth
     enable-blocks: true
+    min-block-reward: 10
   - coin: xch
     enable-blocks: true
+    min-block-reward: 1.79
 telegram:
   chat-id: 000000000
   channel-name: MyTelegramChannel
