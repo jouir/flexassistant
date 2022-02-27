@@ -54,6 +54,50 @@ ls -l bin/flexassistant
 
 ## Configuration
 
+### Telegram
+
+Follow [this procedure](https://core.telegram.org/bots#3-how-do-i-create-a-bot) to create a bot `token`.
+
+Then you have two possible destinations to send messages:
+* channel using a `channel_name` (string)
+* chat using a `chat_id` (integer)
+
+For testing purpose, you should store the token in a variable for next sections:
+```
+read -s TOKEN
+```
+
+#### Chat
+
+To get the chat identifier, you can send a message to your bot then read messages using the API:
+
+```
+curl -s -XGET "https://api.telegram.org/bot${TOKEN}/getUpdates" | jq -r ".result[].message.chat.id"
+```
+
+You can test to send messages to a chat with:
+
+```
+read CHAT_ID
+curl -s -XGET "https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=hello" | jq
+```
+
+#### Channel
+
+Public channel names can be used (example: `@mychannel`). For private channels, you should use a `chat_id` instead.
+
+You can test to send messages to a channel with:
+
+```
+read CHANNEL_NAME
+curl -s -XGET "https://api.telegram.org/bot${TOKEN}/sendMessage?chat_id=${CHANNEL_NAME}&text=hello" | jq
+```
+
+Don't forget to prefix the channel name with an `@`.
+
+
+### flexassistant
+
 *flexassistant* can be configured using a YaML file. By default, the `flexassistant.yaml` file is used but it can be
 another file provided by the `-config` argument.
 

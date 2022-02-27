@@ -22,7 +22,7 @@ pools:
     min-block-reward: 1.79
 telegram:
   chat-id: 000000000
-  channel-name: MyTelegramChannel
+  channel-name: @MyTelegramChannel
   token: 0000000000000000000000000000000000000000000000
 #notifications:
 #  balance:
