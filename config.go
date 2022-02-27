@@ -8,13 +8,13 @@ import (
 
 // Config to receive settings from the configuration file
 type Config struct {
-	DatabaseFile          string                      `yaml:"database-file"`
-	MaxBlocks             int                         `yaml:"max-blocks"`
-	MaxPayments           int                         `yaml:"max-payments"`
-	Pools                 []PoolConfig                `yaml:"pools"`
-	Miners                []MinerConfig               `yaml:"miners"`
-	TelegramConfig        TelegramConfig              `yaml:"telegram"`
-	NotificationTemplates NotificationTemplatesConfig `yaml:"notification-templates"`
+	DatabaseFile   string              `yaml:"database-file"`
+	MaxBlocks      int                 `yaml:"max-blocks"`
+	MaxPayments    int                 `yaml:"max-payments"`
+	Pools          []PoolConfig        `yaml:"pools"`
+	Miners         []MinerConfig       `yaml:"miners"`
+	TelegramConfig TelegramConfig      `yaml:"telegram"`
+	Notifications  NotificationsConfig `yaml:"notifications"`
 }
 
 // PoolConfig to store Pool configuration
@@ -27,6 +27,7 @@ type PoolConfig struct {
 // MinerConfig to store Miner configuration
 type MinerConfig struct {
 	Address              string `yaml:"address"`
+	Coin                 string `yaml:"coin"`
 	EnableBalance        bool   `yaml:"enable-balance"`
 	EnablePayments       bool   `yaml:"enable-payments"`
 	EnableOfflineWorkers bool   `yaml:"enable-offline-workers"`
@@ -39,12 +40,18 @@ type TelegramConfig struct {
 	ChannelName string `yaml:"channel-name"`
 }
 
-// NotificationTemplatesConfig to store notifications templates configuration
-type NotificationTemplatesConfig struct {
-	Balance       string `yaml:"balance"`
-	Payment       string `yaml:"payment"`
-	Block         string `yaml:"block"`
-	OfflineWorker string `yaml:"offline-worker"`
+// NotificationTemplatesConfig to store all notifications configurations
+type NotificationsConfig struct {
+	Balance       NotificationConfig `yaml:"balance"`
+	Payment       NotificationConfig `yaml:"payment"`
+	Block         NotificationConfig `yaml:"block"`
+	OfflineWorker NotificationConfig `yaml:"offline-worker"`
+}
+
+// NotificationConfig to store a single notification configuration
+type NotificationConfig struct {
+	Template string `yaml:"template"`
+	Test     bool   `yaml:"test"`
 }
 
 // NewConfig creates a Config with default values

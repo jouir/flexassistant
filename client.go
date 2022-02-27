@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"sort"
 	"time"
@@ -128,6 +129,16 @@ func (f *FlexpoolClient) MinerPayments(coin string, address string, limit int) (
 	}
 }
 
+// LastMinerPayment return the last payment of a miner
+func (f *FlexpoolClient) LastMinerPayment(miner *Miner) (*Payment, error) {
+	log.Debugf("Fetching last payment of %s", miner)
+	payments, err := f.MinerPayments(miner.Coin, miner.Address, 1)
+	if err != nil {
+		return nil, err
+	}
+	return payments[0], nil
+}
+
 // WorkersResponse represents the JSON structure of the Flexpool API response for workers
 type WorkersResponse struct {
 	Error  string `json:"error"`
@@ -204,4 +215,81 @@ func (f *FlexpoolClient) PoolBlocks(coin string, limit int) (blocks []*Block, er
 			return nil, fmt.Errorf("Max iterations of %d reached", MaxIterations)
 		}
 	}
+}
+
+// LastPoolBlock return the last discovered block for a given pool
+func (f *FlexpoolClient) LastPoolBlock(pool *Pool) (*Block, error) {
+	blocks, err := f.PoolBlocks(pool.Coin, 1)
+	if err != nil {
+		return nil, err
+	}
+	return blocks[0], nil
+}
+
+// CoinsResponse represents the JSON structure of the Flexpool API response for pool coins
+type CoinsResponse struct {
+	Error  string `json:"error"`
+	Result struct {
+		Coins []struct {
+			Ticker string `json:"ticker"`
+			Name   string `json:"name"`
+		} `json:"coins"`
+	} `json:"result"`
+}
+
+// RandomPool returns a random pool from the API
+func (f *FlexpoolClient) RandomPool() (*Pool, error) {
+	log.Debug("Fetching a random pool")
+	body, err := f.request(fmt.Sprintf("%s/pool/coins", FlexpoolAPIURL))
+	if err != nil {
+		return nil, err
+	}
+	var response CoinsResponse
+	json.Unmarshal(body, &response)
+	randomIndex := rand.Intn(len(response.Result.Coins))
+	if err != nil {
+		return nil, err
+	}
+	randomCoin := response.Result.Coins[randomIndex]
+	return NewPool(randomCoin.Ticker), nil
+}
+
+// TopMinersResponse represents the JSON structure of the Flexpool API response for pool top miners
+type TopMinersResponse struct {
+	Error  string `json:"error"`
+	Result []struct {
+		Address string `json:"address"`
+	} `json:"result"`
+}
+
+// RandomMiner returns a random miner from the API
+func (f *FlexpoolClient) RandomMiner(pool *Pool) (*Miner, error) {
+	log.Debug("Fetching a random miner")
+	body, err := f.request(fmt.Sprintf("%s/pool/topMiners?coin=%s", FlexpoolAPIURL, pool.Coin))
+	if err != nil {
+		return nil, err
+	}
+	var response TopMinersResponse
+	json.Unmarshal(body, &response)
+	randomResult := response.Result[rand.Intn(len(response.Result))]
+	randomMiner, err := NewMiner(randomResult.Address, pool.Coin)
+	if err != nil {
+		return nil, err
+	}
+	randomBalance, err := f.MinerBalance(pool.Coin, randomMiner.Address)
+	if err != nil {
+		return nil, err
+	}
+	randomMiner.Balance = randomBalance
+	return randomMiner, nil
+}
+
+// RandomWorker returns a random worker from the API
+func (f *FlexpoolClient) RandomWorker(miner *Miner) (*Worker, error) {
+	log.Debug("Fetching a random worker")
+	workers, err := f.MinerWorkers(miner.Coin, miner.Address)
+	if err != nil {
+		return nil, err
+	}
+	return workers[rand.Intn(len(workers))], nil
 }

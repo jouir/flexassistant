@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -30,6 +32,7 @@ const MaxBlocks = 50
 // initialize logging
 func init() {
 	log.SetOutput(os.Stdout)
+	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {
@@ -84,9 +87,18 @@ func main() {
 	client := NewFlexpoolClient()
 
 	// Notifications
-	notifier, err := NewTelegramNotifier(&config.TelegramConfig, &config.NotificationTemplates)
+	notifier, err := NewTelegramNotifier(&config.TelegramConfig, &config.Notifications)
 	if err != nil {
 		log.Fatalf("Could not create notifier: %v", err)
+	}
+
+	executed, err := notifier.NotifyTest(*client)
+	if err != nil {
+		log.Fatalf("Could not send test notifications: %v", err)
+	}
+	if executed {
+		log.Debug("Exit after sending test notifications")
+		return
 	}
 
 	// Limits
@@ -106,7 +118,7 @@ func main() {
 
 	// Handle miners
 	for _, configuredMiner := range config.Miners {
-		miner, err := NewMiner(configuredMiner.Address)
+		miner, err := NewMiner(configuredMiner.Address, configuredMiner.Coin)
 		if err != nil {
 			log.Warnf("Could not parse miner: %v", err)
 			continue

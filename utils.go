@@ -14,6 +14,8 @@ const MojoToXCHDivider = 1000000000000
 // Example: for "eth", convert from Weis to ETH
 func ConvertCurrency(coin string, value float64) (float64, error) {
 	switch coin {
+	case "etc":
+		return ConvertWeis(value), nil
 	case "eth":
 		return ConvertWeis(value), nil
 	case "xch":
@@ -36,6 +38,8 @@ func ConvertMojo(value float64) float64 {
 // FormatBlockURL returns the URL on the respective blockchain explorer given the coin and the block hash
 func FormatBlockURL(coin string, hash string) (string, error) {
 	switch coin {
+	case "etc":
+		return fmt.Sprintf("https://etcblockexplorer.com/block/%s", hash), nil
 	case "eth":
 		return fmt.Sprintf("https://etherscan.io/block/%s", hash), nil
 	case "xch":
@@ -47,6 +51,8 @@ func FormatBlockURL(coin string, hash string) (string, error) {
 // FormatTransactionURL returns the URL on the respective blockchain explorer given the coin and the transaction hash
 func FormatTransactionURL(coin string, hash string) (string, error) {
 	switch coin {
+	case "etc":
+		return fmt.Sprintf("https://etcblockexplorer.com/address/%s", hash), nil
 	case "eth":
 		return fmt.Sprintf("https://etherscan.io/tx/%s", hash), nil
 	case "xch":

@@ -24,13 +24,15 @@ type Miner struct {
 }
 
 // NewMiner creates a Miner
-func NewMiner(address string) (*Miner, error) {
-	miner := &Miner{Address: address}
-	coin, err := miner.ParseCoin()
-	if err != nil {
-		return nil, err
+func NewMiner(address string, coin string) (*Miner, error) {
+	miner := &Miner{Address: address, Coin: coin}
+	if coin == "" {
+		coin, err := miner.ParseCoin()
+		if err != nil {
+			return nil, err
+		}
+		miner.Coin = coin
 	}
-	miner.Coin = coin
 	return miner, nil
 }
 

@@ -32,19 +32,20 @@ type Notifier interface {
 	NotifyPayment(miner Miner, payment Payment) error
 	NotifyBlock(pool Pool, block Block) error
 	NotifyOfflineWorker(worker Worker) error
+	NotifyTest(client FlexpoolClient) error
 }
 
 // TelegramNotifier to send notifications using Telegram
 // Implements the Notifier interface
 type TelegramNotifier struct {
-	bot             *telegram.BotAPI
-	chatID          int64
-	channelName     string
-	templatesConfig *NotificationTemplatesConfig
+	bot            *telegram.BotAPI
+	chatID         int64
+	channelName    string
+	configurations *NotificationsConfig
 }
 
 // NewTelegramNotifier to create a TelegramNotifier
-func NewTelegramNotifier(config *TelegramConfig, templatesConfig *NotificationTemplatesConfig) (*TelegramNotifier, error) {
+func NewTelegramNotifier(config *TelegramConfig, configurations *NotificationsConfig) (*TelegramNotifier, error) {
 	bot, err := telegram.NewBotAPI(config.Token)
 	if err != nil {
 		return nil, err
@@ -52,10 +53,10 @@ func NewTelegramNotifier(config *TelegramConfig, templatesConfig *NotificationTe
 	log.Debugf("Connected to Telegram as %s", bot.Self.UserName)
 
 	return &TelegramNotifier{
-		bot:             bot,
-		chatID:          config.ChatID,
-		channelName:     config.ChannelName,
-		templatesConfig: templatesConfig,
+		bot:            bot,
+		chatID:         config.ChatID,
+		channelName:    config.ChannelName,
+		configurations: configurations,
 	}, nil
 }
 
@@ -125,8 +126,8 @@ func fileExists(filename string) bool {
 // Implements the Notifier interface
 func (t *TelegramNotifier) NotifyBalance(miner Miner) (err error) {
 	templateName := "templates/balance.tmpl"
-	if t.templatesConfig.Balance != "" {
-		templateName = t.templatesConfig.Balance
+	if t.configurations.Balance.Template != "" {
+		templateName = t.configurations.Balance.Template
 	}
 	message, err := t.formatMessage(templateName, Attachment{Miner: miner})
 	if err != nil {
@@ -135,12 +136,26 @@ func (t *TelegramNotifier) NotifyBalance(miner Miner) (err error) {
 	return t.sendMessage(message)
 }
 
+// testNotifyBalance sends a fake balance notification
+func (t *TelegramNotifier) testNotifyBalance(client FlexpoolClient) error {
+	log.Debug("Testing balance notification")
+	randomPool, err := client.RandomPool()
+	if err != nil {
+		return err
+	}
+	randomMiner, err := client.RandomMiner(randomPool)
+	if err != nil {
+		return err
+	}
+	return t.NotifyBalance(*randomMiner)
+}
+
 // NotifyPayment to format and send a notification when a new payment has been detected
 // Implements the Notifier interface
 func (t *TelegramNotifier) NotifyPayment(miner Miner, payment Payment) error {
 	templateName := "templates/payment.tmpl"
-	if t.templatesConfig.Payment != "" {
-		templateName = t.templatesConfig.Payment
+	if t.configurations.Payment.Template != "" {
+		templateName = t.configurations.Payment.Template
 	}
 	message, err := t.formatMessage(templateName, Attachment{Miner: miner, Payment: payment})
 	if err != nil {
@@ -149,12 +164,30 @@ func (t *TelegramNotifier) NotifyPayment(miner Miner, payment Payment) error {
 	return t.sendMessage(message)
 }
 
+// testNotifyPayment sends a fake payment notification
+func (t *TelegramNotifier) testNotifyPayment(client FlexpoolClient) error {
+	log.Debug("Testing payment notification")
+	randomPool, err := client.RandomPool()
+	if err != nil {
+		return err
+	}
+	randomMiner, err := client.RandomMiner(randomPool)
+	if err != nil {
+		return err
+	}
+	randomPayment, err := client.LastMinerPayment(randomMiner)
+	if err != nil {
+		return err
+	}
+	return t.NotifyPayment(*randomMiner, *randomPayment)
+}
+
 // NotifyBlock to format and send a notification when a new block has been detected
 // Implements the Notifier interface
 func (t *TelegramNotifier) NotifyBlock(pool Pool, block Block) error {
 	templateName := "templates/block.tmpl"
-	if t.templatesConfig.Block != "" {
-		templateName = t.templatesConfig.Block
+	if t.configurations.Block.Template != "" {
+		templateName = t.configurations.Block.Template
 	}
 	message, err := t.formatMessage(templateName, Attachment{Pool: pool, Block: block})
 	if err != nil {
@@ -163,15 +196,84 @@ func (t *TelegramNotifier) NotifyBlock(pool Pool, block Block) error {
 	return t.sendMessage(message)
 }
 
+// testNotifyBlock sends a random block notification
+func (t *TelegramNotifier) testNotifyBlock(client FlexpoolClient) error {
+	log.Debug("Testing block notification")
+	randomPool, err := client.RandomPool()
+	if err != nil {
+		return err
+	}
+	randomBlock, err := client.LastPoolBlock(randomPool)
+	if err != nil {
+		return err
+	}
+	return t.NotifyBlock(*randomPool, *randomBlock)
+}
+
 // NotifyOfflineWorker sends a message when a worker is online or offline
 func (t *TelegramNotifier) NotifyOfflineWorker(worker Worker) error {
 	templateName := "templates/offline-worker.tmpl"
-	if t.templatesConfig.OfflineWorker != "" {
-		templateName = t.templatesConfig.OfflineWorker
+	if t.configurations.OfflineWorker.Template != "" {
+		templateName = t.configurations.OfflineWorker.Template
 	}
 	message, err := t.formatMessage(templateName, Attachment{Worker: worker})
 	if err != nil {
 		return err
 	}
 	return t.sendMessage(message)
+}
+
+// testNotifyOfflineWorker sends a fake worker offline notification
+func (t *TelegramNotifier) testNotifyOfflineWorker(client FlexpoolClient) error {
+	log.Debug("Testing offline worker notification")
+	randomBlock, err := client.RandomPool()
+	if err != nil {
+		return err
+	}
+	randomMiner, err := client.RandomMiner(randomBlock)
+	if err != nil {
+		return err
+	}
+	randomWorker, err := client.RandomWorker(randomMiner)
+	if err != nil {
+		return err
+	}
+	log.Debugf("%s", randomWorker)
+	return t.NotifyOfflineWorker(*randomWorker)
+}
+
+// NotifyTest sends fake notifications
+func (t *TelegramNotifier) NotifyTest(client FlexpoolClient) (executed bool, err error) {
+	if t.configurations.Balance.Test {
+		if err = t.testNotifyBalance(client); err != nil {
+			return false, err
+		} else {
+			executed = true
+		}
+	}
+
+	if t.configurations.Payment.Test {
+		if err = t.testNotifyPayment(client); err != nil {
+			return false, err
+		} else {
+			executed = true
+		}
+	}
+
+	if t.configurations.Block.Test {
+		if err = t.testNotifyBlock(client); err != nil {
+			return false, err
+		} else {
+			executed = true
+		}
+	}
+
+	if t.configurations.OfflineWorker.Test {
+		if err = t.testNotifyOfflineWorker(client); err != nil {
+			return false, err
+		} else {
+			executed = true
+		}
+	}
+	return executed, nil
 }

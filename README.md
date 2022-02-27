@@ -60,7 +60,7 @@ another file provided by the `-config` argument.
 As a good start, you can copy the configuration file example:
 
 ```
-cp -p flexassistant.yaml.example flexassistant.yaml
+cp -p flexassistant.example.yaml flexassistant.yaml
 ```
 
 Then edit this file at will.
@@ -71,11 +71,13 @@ Reference:
 * `max-blocks` (optional): maximum number of blocks to retreive from the API
 * `max-payments` (optional): maximum number of payments to retreive from the API
 * `pools` (optional): list of pools
-    * `coin`: coin of the pool (ex: `eth`, `xch`)
+    * `coin`: coin of the pool (ex: `etc`, `eth`, `xch`)
     * `enable-blocks` (optional): enable block notifications for this pool (disabled by default)
-    * `min-block-reward` (optional): send notifications when block reward has reached this minimum threshold in crypto currency unit (ETH, XCH, etc)
+    * `min-block-reward` (optional): send notifications when block reward has reached this minimum threshold in crypto
+       currency unit (ETH, XCH, etc)
 * `miners` (optional): list of miners and/or farmers
     * `address`: address of the miner or the farmer registered on the API
+    * `coin` (optional): coin of the miner (ex: `etc`, `eth`, `xch`) (deduced by default, can be wrong for `etc` coin)
     * `enable-balance` (optional): enable balance notifications (disabled by default)
     * `enable-payments` (optional): enable payments notifications (disabled by default)
     * `enable-offline-workers` (optional): enable offline/online notifications for associated workers (disabled by
@@ -84,12 +86,19 @@ Reference:
     * `token`: token of the Telegram bot
     * `chat-id` (optional if `channel-name` is present): chat identifier to send Telegram notifications
     * `channel-name` (optional if `chat-id` is present): channel name to send Telegram notifications
-* `notification-templates` (optional): path to [template](https://pkg.go.dev/text/template) files for each notification
-   type
-    * `balance` (optional): path to template file to format balance notifications
-    * `payment` (optional): path to template file to format payment notifications
-    * `block` (optional): path to template file to format block notifications
-    * `offline-worker` (optional): path to template file to format offline worker notifications
+* `notifications` (optional): Notifications configurations
+    * `balance` (optional): balance notifications settings
+        * `template` (optional): path to [template](https://pkg.go.dev/text/template) file
+        * `test` (optional): send a test notification
+    * `payment` (optional): payment notifications settings
+        * `template` (optional): path to [template](https://pkg.go.dev/text/template) file
+        * `test` (optional): send a test notification
+    * `block` (optional): block notification settings
+        * `template` (optional): path to [template](https://pkg.go.dev/text/template) file
+        * `test` (optional): send a test notification
+    * `offline-worker` (optional): offline workers notification settings
+        * `template` (optional): path to [template](https://pkg.go.dev/text/template) file
+        * `test` (optional): send a test notification
 
 ## Templating
 
@@ -112,7 +121,7 @@ The following **data** is available to templates:
 
 Default templates are available in the [templates](templates) directory.
 
-Custom template files can be used with the `notification-templates` settings (see _Configuration_ section).
+Custom template files can be used with the `template` settings (see _Configuration_ section).
 
 ## Usage
 

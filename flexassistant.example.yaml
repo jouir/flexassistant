@@ -4,10 +4,12 @@ max-blocks: 10
 max-payments: 5
 miners:
   - address: 0x0000000000000000000000000000000000000000
+    coin: eth
     enable-balance: true
     enable-payments: true
     enable-offline-workers: true
   - address: xch00000000000000000000000000000000000000000000000000000000000
+    coin: xch
     enable-balance: true
     enable-payments: true
     enable-offline-workers: true
@@ -22,8 +24,16 @@ telegram:
   chat-id: 000000000
   channel-name: MyTelegramChannel
   token: 0000000000000000000000000000000000000000000000
-notification-templates:
-  balance: balance.tmpl
-  block: block.tmpl
-  offline-worker; offline-worker.tmpl
-  payment: payment.tmpl
+#notifications:
+#  balance:
+#    template: balance.tmpl
+#    test: true
+#  block:
+#    template: block.tmpl
+#    test: true
+#  offline-worker:
+#    template: offline-worker.tmpl
+#    test: true
+#  payment:
+#    template: payment.tmpl
+#    test: true
