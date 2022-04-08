@@ -87,7 +87,8 @@ func (f *FlexpoolClient) MinerBalance(coin string, address string) (float64, err
 type PaymentsResponse struct {
 	Error  string `json:"error"`
 	Result struct {
-		Data []struct {
+		TotalPages int `json:"totalPages"`
+		Data       []struct {
 			Hash      string  `json:"hash"`
 			Value     float64 `json:"value"`
 			Timestamp int64   `json:"timestamp"`
@@ -98,7 +99,9 @@ type PaymentsResponse struct {
 // MinerPayments returns an ordered list of payments
 func (f *FlexpoolClient) MinerPayments(coin string, address string, limit int) (payments []*Payment, err error) {
 	page := 0
-	for {
+	totalPages := 0
+
+	for page <= MaxIterations && len(payments) < limit {
 		body, err := f.request(fmt.Sprintf("%s/miner/payments/?coin=%s&address=%s&page=%d", FlexpoolAPIURL, coin, address, page))
 		if err != nil {
 			return nil, err
@@ -106,6 +109,10 @@ func (f *FlexpoolClient) MinerPayments(coin string, address string, limit int) (
 
 		var response PaymentsResponse
 		json.Unmarshal(body, &response)
+
+		if totalPages == 0 {
+			totalPages = response.Result.TotalPages
+		}
 
 		for _, result := range response.Result.Data {
 			payment := NewPayment(
@@ -115,18 +122,24 @@ func (f *FlexpoolClient) MinerPayments(coin string, address string, limit int) (
 			)
 			payments = append(payments, payment)
 			if len(payments) >= limit {
-				// sort by timestamp
-				sort.Slice(payments, func(p1, p2 int) bool {
-					return payments[p1].Timestamp > payments[p2].Timestamp
-				})
-				return payments, nil
+				break
 			}
 		}
-		page = page + 1
-		if page > MaxIterations {
-			return nil, fmt.Errorf("Max iterations of %d reached", MaxIterations)
+		page++
+		if page >= totalPages {
+			break
 		}
 	}
+
+	if page > MaxIterations {
+		return nil, fmt.Errorf("Max iterations of %d reached", MaxIterations)
+	}
+
+	// Sort by timestamp
+	sort.Slice(payments, func(p1, p2 int) bool {
+		return payments[p1].Timestamp > payments[p2].Timestamp
+	})
+	return payments, nil
 }
 
 // LastMinerPayment return the last payment of a miner
