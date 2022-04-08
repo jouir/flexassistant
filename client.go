@@ -188,7 +188,8 @@ func (f *FlexpoolClient) MinerWorkers(coin string, address string) (workers []*W
 type BlocksResponse struct {
 	Error  string `json:"error"`
 	Result struct {
-		Data []struct {
+		TotalPages int `json:"totalPages"`
+		Data       []struct {
 			Hash   string  `json:"hash"`
 			Number uint64  `json:"number"`
 			Reward float64 `json:"reward"`
@@ -199,7 +200,9 @@ type BlocksResponse struct {
 // PoolBlocks returns an ordered list of blocks
 func (f *FlexpoolClient) PoolBlocks(coin string, limit int) (blocks []*Block, err error) {
 	page := 0
-	for {
+	totalPages := 0
+
+	for page <= MaxIterations && len(blocks) < limit {
 		body, err := f.request(fmt.Sprintf("%s/pool/blocks/?coin=%s&page=%d", FlexpoolAPIURL, coin, page))
 		if err != nil {
 			return nil, err
@@ -207,6 +210,10 @@ func (f *FlexpoolClient) PoolBlocks(coin string, limit int) (blocks []*Block, er
 
 		var response BlocksResponse
 		json.Unmarshal(body, &response)
+
+		if totalPages == 0 {
+			totalPages = response.Result.TotalPages
+		}
 
 		for _, result := range response.Result.Data {
 			block := NewBlock(
@@ -216,18 +223,23 @@ func (f *FlexpoolClient) PoolBlocks(coin string, limit int) (blocks []*Block, er
 			)
 			blocks = append(blocks, block)
 			if len(blocks) >= limit {
-				// sort by number
-				sort.Slice(blocks, func(b1, b2 int) bool {
-					return blocks[b1].Number < blocks[b2].Number
-				})
-				return blocks, nil
+				break
 			}
 		}
-		page = page + 1
-		if page > MaxIterations {
-			return nil, fmt.Errorf("Max iterations of %d reached", MaxIterations)
+		page++
+		if page >= totalPages {
+			break
 		}
 	}
+	if page > MaxIterations {
+		return nil, fmt.Errorf("Max iterations of %d reached", MaxIterations)
+	}
+
+	// Sort by number
+	sort.Slice(blocks, func(b1, b2 int) bool {
+		return blocks[b1].Number < blocks[b2].Number
+	})
+	return blocks, nil
 }
 
 // LastPoolBlock return the last discovered block for a given pool
