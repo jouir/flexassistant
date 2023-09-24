@@ -1,3 +1,10 @@
+# END OF LIFE NOTICE
+
+> **Flexpool.io will officially wind down its operations on November 1, 2023**
+
+[See the full
+announcement](https://www.reddit.com/r/Flexpool/comments/16q72ul/action_required_flexpoolio_shutdown_notice_nov_1/).
+
 # flexassistant
 
 [Flexpool.io](https://www.flexpool.io/) is a famous cryptocurrency mining or farming pool supporting
